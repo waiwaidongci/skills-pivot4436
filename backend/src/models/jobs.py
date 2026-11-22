@@ -50,3 +50,39 @@ class Delivery(Base):
     state: Mapped[str] = mapped_column(String(20))
     detail: Mapped[str] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(default=now)
+
+
+class Publication(Base):
+    """一次复核通过的公开版本；version 按通过顺序递增且不可改写。"""
+    __tablename__ = 'publications'
+
+    version: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    run_id: Mapped[int] = mapped_column(ForeignKey('runs.id'), unique=True)
+    snapshot: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(default=now)
+
+
+class Partner(Base):
+    """合作方名册。confirmed_version 只由回执确认推进，表示对方已入库的版本。"""
+    __tablename__ = 'partners'
+
+    name: Mapped[str] = mapped_column(String(100), primary_key=True)
+    confirmed_version: Mapped[int] = mapped_column(default=0)
+    created_at: Mapped[datetime] = mapped_column(default=now)
+
+
+class DeliveryPackage(Base):
+    """待确认或已确认的交付包。pending_key 唯一，保证每家同时只有一份待确认包。"""
+    __tablename__ = 'delivery_packages'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    partner: Mapped[str] = mapped_column(ForeignKey('partners.name'), index=True)
+    baseline_version: Mapped[int]
+    target_version: Mapped[int]
+    kind: Mapped[str] = mapped_column(String(10))
+    operations: Mapped[list] = mapped_column(JSON)
+    checksum: Mapped[str] = mapped_column(String(64))
+    export_file: Mapped[str | None] = mapped_column(String(100))
+    pending_key: Mapped[str | None] = mapped_column(String(100), unique=True, default=None)
+    created_at: Mapped[datetime] = mapped_column(default=now)
+    confirmed_at: Mapped[datetime | None]

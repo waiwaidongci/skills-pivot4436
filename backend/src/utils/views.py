@@ -27,3 +27,21 @@ def schedule(item):
 def delivery(item):
     return {'id': item.id, 'run_id': item.run_id, 'recipient': item.recipient,
             'state': item.state, 'detail': item.detail, 'created_at': iso(item.created_at)}
+
+
+def package(item):
+    from src.domain.delivery_pack import KIND_LABELS, OP_LABELS
+    return {'id': item.id, 'partner': item.partner, 'baseline_version': item.baseline_version,
+            'target_version': item.target_version, 'kind': item.kind,
+            'kind_label': KIND_LABELS.get(item.kind, item.kind), 'checksum': item.checksum,
+            'pending': item.pending_key is not None, 'operation_count': len(item.operations),
+            'operations': [{'op': op['op'], 'op_label': OP_LABELS.get(op['op'], op['op']),
+                            'key': op['key'], 'value': op.get('value')} for op in item.operations],
+            'has_export': bool(item.export_file), 'created_at': iso(item.created_at),
+            'confirmed_at': iso(item.confirmed_at)}
+
+
+def partner(name, confirmed_version, latest_version, pending):
+    return {'name': name, 'confirmed_version': confirmed_version, 'latest_version': latest_version,
+            'up_to_date': latest_version is not None and confirmed_version >= latest_version,
+            'pending': package(pending) if pending else None}

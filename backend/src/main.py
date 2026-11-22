@@ -29,10 +29,8 @@ app = FastAPI(title=SPEC['title'], lifespan=lifespan)
 errors.install(app)
 headers.install(app)
 rate.install(app)
-for module in (identity, registry, runs):
+for module in (identity, registry, runs, distribution):
     app.include_router(module.router)
-if SPEC.get('scheduled'):
-    app.include_router(distribution.router)
 
 
 @app.get('/healthz', include_in_schema=False)

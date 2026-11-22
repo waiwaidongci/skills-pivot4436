@@ -12,6 +12,7 @@ from src.models.jobs import Run
 from src.models.source import Dataset
 from src.schemas.requests import ReviewRequest, RunRequest
 from src.services.audit import record
+from src.services.delivery import publish
 from src.services.validation import normalize_params
 from src.utils import views
 from src.utils.wakeup import wake
@@ -84,5 +85,10 @@ def review(run_id: int, body: ReviewRequest, db: Session = Depends(connection),
         raise ValueError('请选择项目支持的处置决定')
     item.review, item.review_note, item.decision = body.review, body.note, body.decision or None
     record(db, actor.username, f'review.{item.review}', item.id, note=body.note, decision=item.decision)
+    if item.review == Review.ACCEPTED:
+        # 复核通过即登记不可变公开版本，供公开表交付按版本增量分发。
+        publication = publish(db, item)
+        record(db, actor.username, 'publication.created', publication.version,
+               run_id=item.id, period=publication.snapshot.get('period'))
     db.commit()
     return views.run(item, detail=True)

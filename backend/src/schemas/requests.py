@@ -28,3 +28,13 @@ class ScheduleRequest(RunRequest):
     recipient: str = Field(min_length=1, max_length=100)
     first_at: datetime
     repeat_daily: bool = False
+
+class PartnerRequest(Request):
+    name: str = Field(min_length=1, max_length=100)
+
+class ClaimRequest(PartnerRequest):
+    pass
+
+class ConfirmRequest(PartnerRequest):
+    package_id: int = Field(gt=0)
+    checksum: str = Field(min_length=64, max_length=64)

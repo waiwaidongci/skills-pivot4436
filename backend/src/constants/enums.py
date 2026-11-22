@@ -15,3 +15,11 @@ class Review(StrEnum):
     PENDING = 'pending'
     ACCEPTED = 'accepted'
     RETURNED = 'returned'
+
+class PackageKind(StrEnum):
+    FULL = 'full'
+    DELTA = 'delta'
+
+class PackageOp(StrEnum):
+    SET = 'set'
+    REMOVE = 'remove'
